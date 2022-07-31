@@ -3,6 +3,7 @@ package com.pro.jgsu;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 
 /**
  * @Author XWH
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @Slf4j
 @SpringBootApplication
+@ServletComponentScan
 public class JGSUApplication {
     public static void main(String[] args) {
         SpringApplication.run(JGSUApplication.class,args);
