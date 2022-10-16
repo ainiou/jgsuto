@@ -16,6 +16,5 @@ public class JGSUApplication {
     public static void main(String[] args) {
         SpringApplication.run(JGSUApplication.class,args);
         log.info("项目启动成功");
-
     }
 }

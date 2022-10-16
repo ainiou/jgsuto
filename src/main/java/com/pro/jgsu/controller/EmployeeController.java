@@ -35,6 +35,7 @@ public class EmployeeController {
      */
     @PostMapping("/login")
     public R<Employee> login(HttpServletRequest request, @RequestBody Employee employee){
+
         //1.将密码就行MD5加密处理
         String password = employee.getPassword();
         password = DigestUtils.md5DigestAsHex(password.getBytes());
@@ -73,6 +74,12 @@ public class EmployeeController {
         return R.success("退出成功");
     }
 
+    /**
+     * 新增员工
+     * @param request
+     * @param employee
+     * @return
+     */
     @PostMapping
     public R<String> save(HttpServletRequest request, @RequestBody Employee employee){
 //        log.info("新增员工，员工信息：{}",employee.toString());
@@ -81,13 +88,13 @@ public class EmployeeController {
         employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
 
         //设置日志信息
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
+//        employee.setCreateTime(LocalDateTime.now());
+//        employee.setUpdateTime(LocalDateTime.now());
 
         Long empId = (Long)request.getSession().getAttribute("employee");
 
-        employee.setCreateUser(empId);
-        employee.setUpdateUser(empId);
+//        employee.setCreateUser(empId);
+//        employee.setUpdateUser(empId);
 
         //保存用户
         employeeService.save(employee);
@@ -122,17 +129,30 @@ public class EmployeeController {
         return R.success(pageInfo);
     }
 
+    /**
+     * 修改员工信息，禁用账号
+     * @param request
+     * @param employee
+     * @return
+     */
     @PutMapping
     public R<String> update(HttpServletRequest request, @RequestBody Employee employee){
         //获取操作员id
        Long empId = (Long)request.getSession().getAttribute("employee");
        //记录日志
-        employee.setUpdateUser(empId);
-        employee.setUpdateTime(LocalDateTime.now());
+//        employee.setUpdateUser(empId);
+//        employee.setUpdateTime(LocalDateTime.now());
         //执行更新操作
         employeeService.updateById(employee);
 
        return R.success("员工信息修改成功！");
+    }
+
+    @GetMapping("/{id}")
+    public R<Employee> getById(@PathVariable Long id){
+        log.info("根据id查询员工信息...");
+        Employee employee = employeeService.getById(id);
+        return R.success(employee);
     }
 }
 
