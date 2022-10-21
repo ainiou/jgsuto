@@ -14,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,4 +77,45 @@ public class DishController {
         dishDtoPage.setRecords(list);
         return R.success(dishDtoPage);
     }
+
+    @GetMapping("/{id}")
+    public R<DishDto> get(@PathVariable Long id){
+        DishDto dishDto = dishService.getByIdWithFlavor(id);
+
+        return R.success(dishDto);
+    }
+
+    @PutMapping
+    public R<String> update(@RequestBody DishDto dishDto){
+        log.info(dishDto.toString());
+        dishService.updateWithFlavor(dishDto);
+        return R.success("修改菜品成功");
+    }
+
+    /**
+     * 批量进行启、停售操作，
+     * @param st  传入参数st为修改后的状态
+     * @param ids 前端传入id的字符串，以','分割,
+     * @return
+     */
+    @PostMapping("/status/{st}")
+    public R<String> setStatus(@PathVariable int st, String ids){
+        //处理string 转成Long
+        String[] split = ids.split(",");
+        List<Long> idList = Arrays.stream(split).map(s -> Long.parseLong(s.trim())).collect(Collectors.toList());
+
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(idList!=null,Dish::getId,idList);
+        List<Dish> list = dishService.list(queryWrapper);
+        for (Dish dish : list) {
+            if (dish!=null)
+            {
+                dish.setStatus(st);
+                dishService.updateById(dish);
+            }
+        }
+        return R.success("操作成功");
+    }
+
+
 }
