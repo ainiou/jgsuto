@@ -2,13 +2,13 @@ package com.pro.jgsu.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.pro.jgsu.common.CustomException;
 import com.pro.jgsu.common.R;
 import com.pro.jgsu.dto.DishDto;
 import com.pro.jgsu.entity.Category;
 import com.pro.jgsu.entity.Dish;
-import com.pro.jgsu.service.CategoryService;
-import com.pro.jgsu.service.DishFlavorService;
-import com.pro.jgsu.service.DishService;
+import com.pro.jgsu.entity.SetmealDish;
+import com.pro.jgsu.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +28,8 @@ public class DishController {
     private DishFlavorService dishFlavorService;
     @Autowired
     private CategoryService categoryService;
+    @Autowired
+    private SetmealDishService setmealDishService;
 
     @PostMapping
     public R<String> save(@RequestBody DishDto dishDto){
@@ -85,6 +87,11 @@ public class DishController {
         return R.success(dishDto);
     }
 
+    /**
+     * 修改菜品信息，包括口味信息，操作dish、dish_flavor两种表
+     * @param dishDto
+     * @return
+     */
     @PutMapping
     public R<String> update(@RequestBody DishDto dishDto){
         log.info(dishDto.toString());
@@ -92,20 +99,15 @@ public class DishController {
         return R.success("修改菜品成功");
     }
 
-    /**
-     * 批量进行启、停售操作，
-     * @param st  传入参数st为修改后的状态
-     * @param ids 前端传入id的字符串，以','分割,
-     * @return
-     */
+
     @PostMapping("/status/{st}")
-    public R<String> setStatus(@PathVariable int st, String ids){
+    public R<String> setStatus(@PathVariable int st,@RequestParam List<Long> ids){
         //处理string 转成Long
-        String[] split = ids.split(",");
-        List<Long> idList = Arrays.stream(split).map(s -> Long.parseLong(s.trim())).collect(Collectors.toList());
+//        String[] split = ids.split(",");
+//        List<Long> idList = Arrays.stream(split).map(s -> Long.parseLong(s.trim())).collect(Collectors.toList());
 
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(idList!=null,Dish::getId,idList);
+        queryWrapper.in(ids!=null,Dish::getId,ids);
         List<Dish> list = dishService.list(queryWrapper);
         for (Dish dish : list) {
             if (dish!=null)
@@ -117,5 +119,51 @@ public class DishController {
         return R.success("操作成功");
     }
 
+    /**
+     * 根据条件查询菜品数据
+     * @param dish
+     * @return
+     */
+    @GetMapping("/list")
+    public R<List<Dish>> list(Dish dish){
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        //添加查询条件，根据菜品分类id查询，且菜品为在售状态，即dish.status == 1
+        queryWrapper.eq(dish.getCategoryId() != null,Dish::getCategoryId,dish.getCategoryId());
+        queryWrapper.eq(Dish::getStatus,1);
+        //添加排序条件
+        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+        //查询
+        List<Dish> list = dishService.list(queryWrapper);
+
+        return R.success(list);
+    }
+
+    @DeleteMapping
+    public R<String> delete(@RequestParam List<Long> ids){
+        //校验删除的菜品中是否含有正在售卖的菜品
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Dish::getId,ids);
+        queryWrapper.eq(Dish::getStatus,1);
+        //统计删除的菜品中在售的菜品数，大于0则不允许删除，抛出业务异常
+        int count = dishService.count(queryWrapper);
+        if(count > 0){
+            throw new CustomException("删除的菜品中含有在售的菜品，请停售后再试");
+        }
+        //校验是否有套餐关联了菜品，如果关联了套餐则不允许删除，抛出业务异常
+        LambdaQueryWrapper<SetmealDish> queryWrapper1 = new LambdaQueryWrapper<>();
+        queryWrapper1.in(SetmealDish::getDishId,ids);
+
+        //List<SetmealDish> list = setmealDishService.list(queryWrapper1);
+        //SELECT COUNT( * ) FROM setmeal_dish WHERE (dish_id IN (?))
+        int count1 = setmealDishService.count(queryWrapper1);
+        if(count1 > 0){
+            throw new CustomException("删除的菜品存在于某套餐中，请删除套餐后再试");
+        }
+
+        //删除菜品
+        dishService.removeByIds(ids);
+
+        return R.success("删除菜品成功");
+    }
 
 }
