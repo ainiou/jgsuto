@@ -18,8 +18,6 @@ import java.util.List;
 @Slf4j
 @Configuration
 public class WebMvcConfig extends WebMvcConfigurationSupport {
-
-
     /**
      * 设置静态资源映射
      * @param registry
@@ -30,7 +28,6 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
         registry.addResourceHandler("/backend/**").addResourceLocations("classpath:/backend/");
         registry.addResourceHandler("/front/**").addResourceLocations("classpath:/front/");
     }
-
 
     /**
      * 扩展SpringMVC消息转换器,使Long 型变量转换为String类型后序列化到JSON中传递给前端，解决JS处理精度问题
