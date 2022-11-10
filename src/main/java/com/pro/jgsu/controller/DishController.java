@@ -7,6 +7,7 @@ import com.pro.jgsu.common.R;
 import com.pro.jgsu.dto.DishDto;
 import com.pro.jgsu.entity.Category;
 import com.pro.jgsu.entity.Dish;
+import com.pro.jgsu.entity.DishFlavor;
 import com.pro.jgsu.entity.SetmealDish;
 import com.pro.jgsu.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -124,7 +125,7 @@ public class DishController {
      * @param dish
      * @return
      */
-    @GetMapping("/list")
+/*    @GetMapping("/list")
     public R<List<Dish>> list(Dish dish){
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         //添加查询条件，根据菜品分类id查询，且菜品为在售状态，即dish.status == 1
@@ -136,6 +137,42 @@ public class DishController {
         List<Dish> list = dishService.list(queryWrapper);
 
         return R.success(list);
+    }*/
+
+    @GetMapping("/list")
+    public R<List<DishDto>> list(Dish dish){
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        //添加查询条件，根据菜品分类id查询，且菜品为在售状态，即dish.status == 1
+        queryWrapper.eq(dish.getCategoryId() != null,Dish::getCategoryId,dish.getCategoryId());
+        queryWrapper.eq(Dish::getStatus,1);
+        //添加排序条件
+        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+        //查询
+        List<Dish> list = dishService.list(queryWrapper);
+
+        //给list赋上分类与口味信息
+        List<DishDto> Dtolist = list.stream().map(item ->{
+            DishDto dishDto = new DishDto();
+            BeanUtils.copyProperties(item,dishDto);
+            Long categoryId = item.getCategoryId();
+            Category category = categoryService.getById(categoryId);
+
+            if(category != null){
+                dishDto.setCategoryName(category.getName());
+            }
+            //当前菜品id
+            Long dishId = item.getId();
+            //查询菜品口味信息并赋给当前菜品
+            LambdaQueryWrapper<DishFlavor> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(DishFlavor::getDishId,dishId);
+
+            List<DishFlavor> flavors = dishFlavorService.list(lambdaQueryWrapper);
+            dishDto.setFlavors(flavors);
+            return dishDto;
+
+        }).collect(Collectors.toList());
+
+        return R.success(Dtolist);
     }
 
     @DeleteMapping

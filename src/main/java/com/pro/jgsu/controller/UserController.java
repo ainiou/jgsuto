@@ -41,8 +41,8 @@ public class UserController {
         //生成四位随机校验码
         String code = ValidateCodeUtils.generateValidateCode(4).toString();
         //发送邮件
-        MailUtils.sendMail(phone,"【井冈山外卖】您正在登录井冈山外卖，验证码为" + code + "有效期五分钟,如非本人操作，请忽略本邮件！",
-                "井冈山外卖验证码");
+        //MailUtils.sendMail(phone,"【井冈山外卖】您正在登录井冈山外卖，验证码为" + code + "有效期五分钟,如非本人操作，请忽略本邮件！",
+        //        "井冈山外卖验证码");
         //将校验码存入session中
         session.setAttribute("code",code);
         log.info("code={}",code);

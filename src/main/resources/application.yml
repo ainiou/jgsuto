@@ -11,9 +11,9 @@ spring:
       password: root
   mail:
     host: smtp.qq.com
-    # 你的QQ邮箱，这里为发件人，填自己的即可
+    # QQ邮箱，这里为发件人
     username: 2560937178@qq.com
-    # 你的QQ邮箱授权码
+    # QQ邮箱授权码
     password: brszpybonruadjhc
 mybatis-plus:
   configuration:
