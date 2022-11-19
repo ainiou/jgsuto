@@ -15,6 +15,13 @@ spring:
     username: 2560937178@qq.com
     # QQ邮箱授权码
     password: brszpybonruadjhc
+
+  redis:
+    host: 192.168.200.11
+    port: 6379
+    password: root
+    database: 0
+
 mybatis-plus:
   configuration:
     #在映射实体或者属性时，将数据库中表名和字段名中的下划线去掉，按照驼峰命名法映射
