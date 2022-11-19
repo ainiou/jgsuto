@@ -1,6 +1,8 @@
 package com.pro.jgsu.utils;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -10,8 +12,14 @@ import java.util.Properties;
 /**
  * 发邮件工具类
  */
+@Component
 public final class MailUtils {
 
+//    @Value("${spring.mail.username}")
+//    private static String USER;
+//
+//    @Value("${spring.mail.password}")
+//    private static String PASSWORD;
     private static final String USER = "2560937178@qq.com"; // 发件人称号，同邮箱地址
     private static final String PASSWORD = "brszpybonruadjhc"; // 如果是qq邮箱可以使户端授权码，或者登录密码
     /**
@@ -65,8 +73,8 @@ public final class MailUtils {
         return false;
     }
 
-    public static void main(String[] args) throws Exception { // 做测试用
+/*    public static void main(String[] args) throws Exception { // 做测试用
         MailUtils.sendMail("1873138022@qq.com", "你好，这是一封测试邮件，无需回复。", "测试邮件");
         System.out.println("发送成功");
-    }
+    }*/
 }
