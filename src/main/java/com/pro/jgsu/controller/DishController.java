@@ -15,7 +15,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -33,6 +36,7 @@ public class DishController {
     private SetmealDishService setmealDishService;
     @Autowired
     private RedisTemplate redisTemplate;
+    Map map = new HashMap<Object ,Object>();
 
     @PostMapping
     public R<String> save(@RequestBody DishDto dishDto){
